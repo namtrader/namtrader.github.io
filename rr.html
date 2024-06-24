@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RR thực tế</title>
+    <script>
+        function loadInitialLotPercent() {
+            // Lấy giá trị initialLotPercent từ localStorage nếu có
+            const savedPercent = localStorage.getItem('initialLotPercent');
+            if (savedPercent !== null) {
+                document.getElementById('initialLotPercent').value = savedPercent;
+            }
+        }
+
+        function saveInitialLotPercent() {
+            // Lấy giá trị từ ô input và lưu vào localStorage
+            const initialLotPercent = document.getElementById('initialLotPercent').value;
+            localStorage.setItem('initialLotPercent', initialLotPercent);
+        }
+
+        function calculateRR() {
+            // Lấy giá trị từ các ô nhập liệu và chuyển đổi sang số thực
+            const cutR = parseFloat(document.getElementById('cutR').value);
+            const targetR = parseFloat(document.getElementById('targetR').value);
+            const initialLotPercent = parseFloat(document.getElementById('initialLotPercent').value);
+
+            // Chuyển đổi phần trăm khối lượng thành số thập phân
+            const initialLot = initialLotPercent / 100;
+
+            // Kiểm tra lỗi: Nếu cutR, targetR hoặc initialLotPercent không phải là số, hiển thị thông báo lỗi
+            if (isNaN(cutR) || isNaN(targetR) || isNaN(initialLotPercent)) {
+                document.getElementById('result').textContent = "Vui lòng nhập giá trị hợp lệ cho tất cả các ô.";
+                return;
+            }
+
+            // Lưu giá trị initialLotPercent vào localStorage
+            saveInitialLotPercent();
+
+            // Lợi nhuận từ việc cắt nửa khối lượng
+            const profitCut = initialLot * cutR;
+
+            // Lợi nhuận từ khối lượng còn lại khi đạt mục tiêu
+            const remainingLot = initialLot;
+            const profitTarget = remainingLot * targetR;
+
+            // Tổng lợi nhuận thực tế
+            const totalProfit = profitCut + profitTarget;
+
+            // Làm tròn kết quả đến 1 chữ số thập phân
+            const roundedTotalProfit = totalProfit.toFixed(1);
+
+            // Hiển thị kết quả
+            document.getElementById('result').textContent = `Lợi nhuận thực tế là: ${roundedTotalProfit} R`;
+        }
+
+        function checkInputs() {
+            // Lấy giá trị từ các ô nhập liệu và kiểm tra nếu tất cả đều hợp lệ
+            const cutR = document.getElementById('cutR').value;
+            const targetR = document.getElementById('targetR').value;
+            const initialLotPercent = document.getElementById('initialLotPercent').value;
+
+            if (cutR && targetR && initialLotPercent) {
+                calculateRR();
+            }
+        }
+
+        // Tải giá trị initialLotPercent từ localStorage khi trang được tải
+        window.onload = () => {
+            loadInitialLotPercent();
+            // Thêm sự kiện lắng nghe cho các ô input
+            document.getElementById('cutR').addEventListener('input', checkInputs);
+            document.getElementById('targetR').addEventListener('input', checkInputs);
+            document.getElementById('initialLotPercent').addEventListener('input', checkInputs);
+        };
+    </script>
+</head>
+<body>
+    <h1>RR thực tế</h1>
+    <label for="cutR">R tại mức cắt nửa khối lượng:</label>
+    <input type="text" id="cutR" name="cutR" required>
+    <br><br>
+    <label for="targetR">R mục tiêu:</label>
+    <input type="text" id="targetR" name="targetR" required>
+    <br><br>
+    <label for="initialLotPercent">% khối lượng ban đầu (ví dụ: 50 cho 50%):</label>
+    <input type="text" id="initialLotPercent" name="initialLotPercent" required>
+    <br><br>
+    <p id="result"></p>
+</body>
+</html>
