@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tính Kích Thước Lot cho Các Cặp Tiền</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .result {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Tính Kích Thước Lot cho Các Cặp Tiền</h1>
+    <form id="lotForm">
+        <div class="form-group">
+            <label for="currencyPair">Cặp Tiền:</label>
+            <select id="currencyPair" onchange="updateExchangeRate()">
+                <option value="USD">xxxUSD,US30</option>
+                <option value="XAU">XAUUSD</option>
+                <option value="JPY">xxxJPY</option>
+                <option value="CAD">xxxCAD</option>
+                <option value="AUD">xxxAUD</option>
+                <option value="GBP">xxxGBP</option>
+                <option value="NZD">xxxNZD</option>
+                <option value="CHF">xxxCHF</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="capital">Vốn (USD):</label>
+            <input type="number" id="capital" step="0.01" required>
+        </div>
+        <div class="form-group">
+            <label for="riskPercentage">Mức Rủi Ro (%):</label>
+            <input type="number" id="riskPercentage" step="0.01" required>
+        </div>
+        <div class="form-group">
+            <label for="pipRisk">Số Pip Rủi Ro:</label>
+            <input type="number" id="pipRisk" step="0.01" required>
+        </div>
+        <div class="form-group">
+            <label for="exchangeRate">Tỷ Giá với USD:</label>
+            <input type="number" id="exchangeRate" step="0.01" readonly>
+            <button type="button" onclick="reloadExchangeRate()">Tải lại tỷ giá</button>
+        </div>
+    </form>
+
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+    const API_URL = 'https://api.exchangerate-api.com/v4/latest/USD';
+    const CACHE_KEY = 'tradingData';
+
+    async function fetchExchangeRate() {
+        try {
+            const response = await fetch(API_URL);
+            const data = await response.json();
+            localStorage.setItem(CACHE_KEY, JSON.stringify({
+                ...getLocalData(),
+                exchangeRates: data.rates
+            }));
+            return data.rates;
+        } catch (error) {
+            console.error('Lỗi khi lấy tỷ giá:', error);
+            return null;
+        }
+    }
+
+    function getLocalData() {
+        const storedData = localStorage.getItem(CACHE_KEY);
+        return storedData ? JSON.parse(storedData) : {};
+    }
+
+    async function initialize() {
+        const data = getLocalData();
+
+        if (!data.exchangeRates) {
+            // Nếu chưa có tỷ giá trong localStorage, tải tỷ giá và cập nhật
+            const exchangeRates = await fetchExchangeRate();
+            if (exchangeRates) {
+                updateExchangeRateField(exchangeRates);
+            }
+        } else {
+            // Nếu đã có tỷ giá, cập nhật giao diện
+            updateExchangeRateField(data.exchangeRates);
+        }
+
+        // Điền các giá trị từ localStorage vào các trường
+        document.getElementById('currencyPair').value = data.currencyPair || 'USD';
+        document.getElementById('capital').value = data.capital || '';
+        document.getElementById('riskPercentage').value = data.riskPercentage || '';
+        updateExchangeRate();
+    }
+
+    function updateExchangeRateField(rates) {
+        const pair = document.getElementById('currencyPair').value;
+        const exchangeRate = rates[pair];
+        document.getElementById('exchangeRate').value = exchangeRate ? exchangeRate.toFixed(2) : '';
+    }
+
+    async function reloadExchangeRate() {
+        const exchangeRates = await fetchExchangeRate();
+        if (exchangeRates) {
+            updateExchangeRateField(exchangeRates);
+        }
+    }
+
+    function updateExchangeRate() {
+        const data = getLocalData();
+        if (data.exchangeRates) {
+            updateExchangeRateField(data.exchangeRates);
+        }
+    }
+
+    function displayResult(title, pipRisk, pipValueUSD, lotSize, maxRiskUSD) {
+        document.getElementById('result').innerHTML = `
+            <h2>${title}</h2>
+            <p>Số pip rủi ro: ${pipRisk.toFixed(2)}</p>
+            <p>Giá trị pip (USD): ${pipValueUSD.toFixed(2)}</p>
+            <p>Kích thước lot: <span style="color:red">${lotSize.toFixed(3)}</span> (Chia đôi: <span style="color:red">${(lotSize / 2).toFixed(3)}</span>)</p>
+            <p>Số USD rủi ro khi SL: ${maxRiskUSD.toFixed(2)}</p>
+        `;
+    }
+
+    function calculateLot() {
+        const data = getLocalData();
+        const exchangeRates = data.exchangeRates;
+
+        if (!exchangeRates) {
+            document.getElementById('result').innerHTML = '<p>Lỗi khi lấy tỷ giá. Vui lòng thử lại sau.</p>';
+            return;
+        }
+
+        const capital = parseFloat(document.getElementById('capital').value);
+        const riskPercentage = parseFloat(document.getElementById('riskPercentage').value);
+        const pipRisk = parseFloat(document.getElementById('pipRisk').value);
+        const pair = document.getElementById('currencyPair').value;
+        const exchangeRate = exchangeRates[pair];
+
+        localStorage.setItem(CACHE_KEY, JSON.stringify({
+            ...data,
+            currencyPair: pair,
+            capital,
+            riskPercentage
+        }));
+
+        const maxRiskUSD = (capital * riskPercentage) / 100;
+
+        if (pair === 'XAU') {
+            const pipSize = 0.01;
+            const pipValueUSD = 1;
+
+            const lotSize = maxRiskUSD / (pipRisk * pipValueUSD);
+
+            displayResult('Kích Thước Lot cho Vàng', pipRisk, pipValueUSD, lotSize, maxRiskUSD);
+        } else {
+            if (!exchangeRate) {
+                document.getElementById('result').innerHTML = '<p>Tỷ giá không hợp lệ. Vui lòng kiểm tra lại.</p>';
+                return;
+            }
+
+            const pipSize = pair === 'JPY' ? 0.01 : 0.0001;
+            const pipValueUSD = pipSize * 100000 / exchangeRate;
+
+            const lotSize = maxRiskUSD / (pipRisk * pipValueUSD);
+
+            displayResult(`Kích Thước Lot cho Cặp Tiền ${pair}`, pipRisk, pipValueUSD, lotSize, maxRiskUSD);
+        }
+    }
+
+    document.getElementById('lotForm').addEventListener('input', calculateLot);
+    window.onload = initialize;
+</script>
+
+</body>
+</html>
