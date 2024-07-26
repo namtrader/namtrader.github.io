@@ -5,54 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Công Cụ Tính Lot</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 30px 20px;
-        }
-        .container {
-            max-width: 600px;
-            margin: auto;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
-        }
-        .input-group {
-            display: flex;
-            align-items: center;
-        }
+body {
+    font-family: Arial, sans-serif;
+    margin: 30px 20px;
+}
 
-        .input-group input {
-            flex: 1; /* Chiếm không gian còn lại */
-            padding: 8px;
-            box-sizing: border-box;
-            margin-right: 10px; /* Khoảng cách giữa input và button */
-        }
+.container {
+    max-width: 600px;
+    margin: auto;
+}
 
-        .input-group button {
-            padding: 8px 16px;
-            box-sizing: border-box;
-            border: 1px solid #ccc;
-            background-color: #007bff;
-            color: white;
-            cursor: pointer;
-        }
+.form-group {
+    margin-bottom: 15px;
+}
 
-        .input-group button:hover {
-            background-color: #0056b3;
-        }
-        .result {
-            margin-top: 20px;
-        }
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    background-color: #f5f5f5; /* Nền xám nhẹ cho các trường input và select */
+    border: 1px solid #dfdfdf;
+    border-radius: 4px; /* Bo tròn góc của các trường nhập liệu */
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+}
+
+.input-group input {
+    flex: 1; /* Chiếm không gian còn lại */
+    padding: 8px;
+    box-sizing: border-box;
+    margin-right: 10px; /* Khoảng cách giữa input và button */
+    background-color: #f0f0f0; /* Nền xám nhẹ cho input trong nhóm */
+}
+
+.input-group button {
+    padding: 8px 16px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px; /* Bo tròn góc của nút bấm */
+}
+
+.input-group button:hover {
+    background-color: #0056b3;
+}
+
+.result {
+    margin-top: 20px;
+}
+
     </style>
 </head>
 <body>
