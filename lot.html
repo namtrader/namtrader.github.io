@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tính Kích Thước Lot cho Các Cặp Tiền</title>
+    <title>Công Cụ Tính Lot</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -26,6 +26,30 @@
             padding: 8px;
             box-sizing: border-box;
         }
+        .input-group {
+            display: flex;
+            align-items: center;
+        }
+
+        .input-group input {
+            flex: 1; /* Chiếm không gian còn lại */
+            padding: 8px;
+            box-sizing: border-box;
+            margin-right: 10px; /* Khoảng cách giữa input và button */
+        }
+
+        .input-group button {
+            padding: 8px 16px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+
+        .input-group button:hover {
+            background-color: #0056b3;
+        }
         .result {
             margin-top: 20px;
         }
@@ -34,7 +58,7 @@
 <body>
 
 <div class="container">
-    <h1>Tính Kích Thước Lot cho Các Cặp Tiền</h1>
+    <h1>Công Cụ Tính Lot</h1>
     <form id="lotForm">
         <div class="form-group">
             <label for="currencyPair">Cặp Tiền:</label>
@@ -63,8 +87,10 @@
         </div>
         <div class="form-group">
             <label for="exchangeRate">Tỷ Giá với USD:</label>
-            <input type="number" id="exchangeRate" step="0.01" readonly>
-            <button type="button" onclick="reloadExchangeRate()">Tải lại tỷ giá</button>
+            <div class="input-group">
+                <input type="number" id="exchangeRate" step="0.01" readonly>
+                <button type="button" onclick="reloadExchangeRate()">Tải lại tỷ giá</button>
+            </div>
         </div>
     </form>
 
@@ -141,7 +167,7 @@
             <h2>${title}</h2>
             <p>Số pip rủi ro: ${pipRisk.toFixed(2)}</p>
             <p>Giá trị pip (USD): ${pipValueUSD.toFixed(2)}</p>
-            <p>Kích thước lot: <span style="color:red">${lotSize.toFixed(3)}</span> (Chia đôi: <span style="color:red">${(lotSize / 2).toFixed(3)}</span>)</p>
+            <p>Kích thước lot: <span style="color:red">${lotSize.toFixed(2)}</span> (Chia đôi: <span style="color:red">${(lotSize / 2).toFixed(2)}</span>)</p>
             <p>Số USD rủi ro khi SL: ${maxRiskUSD.toFixed(2)}</p>
         `;
     }
@@ -188,7 +214,7 @@
 
             const lotSize = maxRiskUSD / (pipRisk * pipValueUSD);
 
-            displayResult(`Kích Thước Lot cho Cặp Tiền ${pair}`, pipRisk, pipValueUSD, lotSize, maxRiskUSD);
+            displayResult(`Cặp Tiền ${pair}`, pipRisk, pipValueUSD, lotSize, maxRiskUSD);
         }
     }
 
