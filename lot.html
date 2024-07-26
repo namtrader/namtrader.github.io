@@ -165,10 +165,10 @@
     function displayResult(title, pipRisk, pipValueUSD, lotSize, maxRiskUSD) {
         document.getElementById('result').innerHTML = `
             <h2>${title}</h2>
-            <p>Số pip rủi ro: ${pipRisk.toFixed(2)}</p>
-            <p>Giá trị pip (USD): ${pipValueUSD.toFixed(2)}</p>
             <p>Kích thước lot: <span style="color:red">${lotSize.toFixed(2)}</span> (Chia đôi: <span style="color:red">${(lotSize / 2).toFixed(2)}</span>)</p>
+            <p>Số pip rủi ro: ${pipRisk}</p>
             <p>Số USD rủi ro khi SL: ${maxRiskUSD.toFixed(2)}</p>
+            <p>Giá trị pip (USD): ${pipValueUSD.toFixed(2)}</p>
         `;
     }
 
