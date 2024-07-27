@@ -29,9 +29,9 @@
             width: 100%;
             padding: 8px;
             box-sizing: border-box;
-            background-color: #f5f5f5; /* Nền xám nhẹ cho các trường input và select */
+            background-color: #f5f5f5;
             border: 1px solid #dfdfdf;
-            border-radius: 4px; /* Bo tròn góc của các trường nhập liệu */
+            border-radius: 4px;
         }
 
         .input-group {
@@ -40,11 +40,11 @@
         }
 
         .input-group input {
-            flex: 1; /* Chiếm không gian còn lại */
+            flex: 1;
             padding: 8px;
             box-sizing: border-box;
-            margin-right: 10px; /* Khoảng cách giữa input và button */
-            background-color: #f0f0f0; /* Nền xám nhẹ cho input trong nhóm */
+            margin-right: 10px;
+            background-color: #f0f0f0;
         }
 
         .input-group button {
@@ -54,7 +54,7 @@
             background-color: #007bff;
             color: white;
             cursor: pointer;
-            border-radius: 4px; /* Bo tròn góc của nút bấm */
+            border-radius: 4px;
         }
 
         .input-group button:hover {
@@ -64,7 +64,6 @@
         .result {
             margin-top: 20px;
         }
-
     </style>
 </head>
 <body>
@@ -77,6 +76,7 @@
             <select id="currencyPair" onchange="updateExchangeRate()">
                 <option value="USD">xxxUSD,US30</option>
                 <option value="XAU">XAUUSD</option>
+                <option value="BTC">BTCUSD</option>
                 <option value="JPY">xxxJPY</option>
                 <option value="CAD">xxxCAD</option>
                 <option value="AUD">xxxAUD</option>
@@ -112,15 +112,17 @@
 <script>
     const API_URL = 'https://api.exchangerate-api.com/v4/latest/USD';
     const CACHE_KEY = 'tradingData';
+    const DATE_KEY = 'lastUpdateDate';
 
     async function fetchExchangeRate() {
         try {
             const response = await fetch(API_URL);
             const data = await response.json();
             localStorage.setItem(CACHE_KEY, JSON.stringify({
-                ...getLocalData(),
                 exchangeRates: data.rates
             }));
+            const currentDate = new Date().toISOString().split('T')[0];
+            localStorage.setItem(DATE_KEY, currentDate);
             return data.rates;
         } catch (error) {
             console.error('Lỗi khi lấy tỷ giá:', error);
@@ -135,15 +137,17 @@
 
     async function initialize() {
         const data = getLocalData();
+        const lastUpdateDate = localStorage.getItem(DATE_KEY);
+        const currentDate = new Date().toISOString().split('T')[0];
 
-        if (!data.exchangeRates) {
-            // Nếu chưa có tỷ giá trong localStorage, tải tỷ giá và cập nhật
+        if (lastUpdateDate !== currentDate || !data.exchangeRates) {
+            // Nếu ngày lưu trữ khác ngày hiện tại hoặc không có dữ liệu tỷ giá, tải tỷ giá và cập nhật
             const exchangeRates = await fetchExchangeRate();
             if (exchangeRates) {
                 updateExchangeRateField(exchangeRates);
             }
         } else {
-            // Nếu đã có tỷ giá, cập nhật giao diện
+            // Nếu tỷ giá đã được cập nhật trong ngày hiện tại, lấy từ localStorage
             updateExchangeRateField(data.exchangeRates);
         }
 
@@ -215,6 +219,12 @@
             const lotSize = maxRiskUSD / (pipRisk * pipValueUSD);
 
             displayResult('Cặp Vàng', pipRisk, pipValueUSD, lotSize, maxRiskUSD);
+        } else if (pair === 'BTC') {
+            const pipValueUSD = 0.01;
+
+            const lotSize = maxRiskUSD / pipRisk;
+
+            displayResult('Cặp BTC', pipRisk, pipValueUSD, lotSize, maxRiskUSD);
         } else {
             if (!exchangeRate) {
                 document.getElementById('result').innerHTML = '<p>Tỷ giá không hợp lệ. Vui lòng kiểm tra lại.</p>';
@@ -231,7 +241,7 @@
     }
 
     document.getElementById('lotForm').addEventListener('input', calculateLot);
-    window.onload = initialize;
+    initialize();
 </script>
 
 </body>
