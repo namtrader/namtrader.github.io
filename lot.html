@@ -100,7 +100,7 @@
         <div class="form-group">
             <label for="exchangeRate">Tỷ Giá với USD:</label>
             <div class="input-group">
-                <input type="number" id="exchangeRate" step="0.01" readonly>
+                <input type="number" id="exchangeRate" step="0.01" disabled>
                 <button type="button" onclick="reloadExchangeRate()">Tải lại tỷ giá</button>
             </div>
         </div>
@@ -187,10 +187,9 @@
 
         document.getElementById('result').innerHTML = `
             <h2>${title}</h2>
-            <p>Số Pip SL: ${pipRisk.toFixed(1)}</p>
             <p>Lot: <span style="color:red">${lotSize.toFixed(2)}</span> (Chia đôi: <span style="color:red">${halfLotSize.toFixed(2)}</span>)</p>
+            <p>Số Pip SL: ${pipRisk.toFixed(1)}</p>
             <p>Số USD SL: ${maxRiskUSD.toFixed(2)}</p>
-            <p>Pip (USD): ${pipValueUSD.toFixed(2)}</p>
         `;
     }
 
@@ -208,6 +207,12 @@
         const pipRisk = parseFloat(document.getElementById('pipRisk').value);
         const pair = document.getElementById('currencyPair').value;
         const exchangeRate = exchangeRates[pair];
+
+        // Kiểm tra nếu pipRisk không được nhập
+        if (isNaN(pipRisk) || pipRisk <= 0) {
+            document.getElementById('result').innerHTML = ''; // Không hiển thị kết quả
+            return;
+        }
 
         localStorage.setItem(CACHE_KEY, JSON.stringify({
             ...data,
