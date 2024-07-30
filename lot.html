@@ -179,12 +179,18 @@
     }
 
     function displayResult(title, pipRisk, pipValueUSD, lotSize, maxRiskUSD) {
+        const minLotSize = 0.01;
+
+        // Đảm bảo lotSize và halfLotSize không nhỏ hơn minLotSize và làm tròn chúng
+        lotSize = Math.max(lotSize, minLotSize);
+        const halfLotSize = Math.max(lotSize / 2, minLotSize);
+
         document.getElementById('result').innerHTML = `
             <h2>${title}</h2>
-            <p>Kích thước lot: <span style="color:red">${lotSize.toFixed(2)}</span> (Chia đôi: <span style="color:red">${(lotSize / 2).toFixed(2)}</span>)</p>
-            <p>Số USD dừng lỗ: ${maxRiskUSD.toFixed(2)}</p>
-            <p>Số pip rủi ro: ${pipRisk}</p>
-            <p>Giá trị pip (USD): ${pipValueUSD.toFixed(2)}</p>
+            <p>Số Pip SL: ${pipRisk.toFixed(2)}</p>
+            <p>Lot: <span style="color:red">${lotSize.toFixed(2)}</span> (Chia đôi: <span style="color:red">${halfLotSize.toFixed(2)}</span>)</p>
+            <p>Số USD SL: ${maxRiskUSD.toFixed(2)}</p>
+            <p>Pip (USD): ${pipValueUSD.toFixed(2)}</p>
         `;
     }
 
