@@ -208,18 +208,18 @@
         const pair = document.getElementById('currencyPair').value;
         const exchangeRate = exchangeRates[pair];
 
-        // Kiểm tra nếu pipRisk không được nhập
-        if (isNaN(pipRisk) || pipRisk <= 0) {
-            document.getElementById('result').innerHTML = ''; // Không hiển thị kết quả
-            return;
-        }
-
         localStorage.setItem(CACHE_KEY, JSON.stringify({
             ...data,
             currencyPair: pair,
             capital,
             riskPercentage
         }));
+
+        // Kiểm tra nếu pipRisk không được nhập
+        if (isNaN(pipRisk) || pipRisk <= 0) {
+            document.getElementById('result').innerHTML = ''; // Không hiển thị kết quả
+            return;
+        }
 
         const maxRiskUSD = (capital * riskPercentage) / 100;
 
