@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -78,13 +79,13 @@
 <body>
     <h1>RR thực tế</h1>
     <label for="cutR">R tại mức cắt nửa khối lượng:</label>
-    <input type="text" id="cutR" name="cutR" required>
+    <input type="number" id="cutR" name="cutR" step="0.01" required>
     <br><br>
     <label for="targetR">R mục tiêu:</label>
-    <input type="text" id="targetR" name="targetR" required>
+    <input type="number" id="targetR" name="targetR" step="0.01" required>
     <br><br>
     <label for="initialLotPercent">% khối lượng ban đầu (ví dụ: 50 cho 50%):</label>
-    <input type="text" id="initialLotPercent" name="initialLotPercent" required>
+    <input type="number" id="initialLotPercent" name="initialLotPercent" step="0.01" required>
     <br><br>
     <p id="result"></p>
 </body>
