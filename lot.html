@@ -34,228 +34,145 @@
             border-radius: 4px;
         }
 
-        .input-group {
-            display: flex;
-            align-items: center;
-        }
-
-        .input-group input {
-            flex: 1;
-            padding: 8px;
-            box-sizing: border-box;
-            margin-right: 10px;
-            background-color: #f0f0f0;
-        }
-
-        .input-group button {
-            padding: 8px 16px;
-            box-sizing: border-box;
-            border: 1px solid #ccc;
-            background-color: #007bff;
-            color: white;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-
-        .input-group button:hover {
-            background-color: #0056b3;
-        }
-
         .result {
             margin-top: 20px;
         }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <h1>Công Cụ Tính Lot</h1>
-    <form id="lotForm">
-        <div class="form-group">
-            <label for="currencyPair">Cặp Tiền:</label>
-            <select id="currencyPair" onchange="updateExchangeRate()">
-                <option value="USD">xxxUSD,US30</option>
-                <option value="XAU">XAUUSD</option>
-                <option value="BTC">BTCUSD</option>
-                <option value="JPY">xxxJPY</option>
-                <option value="CAD">xxxCAD</option>
-                <option value="AUD">xxxAUD</option>
-                <option value="GBP">xxxGBP</option>
-                <option value="NZD">xxxNZD</option>
-                <option value="CHF">xxxCHF</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="capital">Vốn (USD):</label>
-            <input type="number" id="capital" step="0.01" required>
-        </div>
-        <div class="form-group">
-            <label for="riskPercentage">Mức Rủi Ro (%):</label>
-            <input type="number" id="riskPercentage" step="0.01" required>
-        </div>
-        <div class="form-group">
-            <label for="pipRisk">Số Pip Rủi Ro:</label>
-            <input type="number" id="pipRisk" step="0.01" required>
-        </div>
-        <div class="form-group">
-            <label for="exchangeRate">Tỷ Giá với USD:</label>
-            <div class="input-group">
-                <input type="number" id="exchangeRate" step="0.01" disabled>
-                <button type="button" onclick="reloadExchangeRate()">Tải lại tỷ giá</button>
+    <div class="container">
+        <h1>Công Cụ Tính Lot</h1>
+        <form id="lotForm">
+            <div class="form-group">
+                <label for="currencyPair">Cặp Tiền:</label>
+                <select id="currencyPair">
+                    <option value="USD">xxxUSD, US30</option>
+                    <option value="XAU">XAUUSD</option>
+                    <option value="BTC">BTCUSD</option>
+                    <option value="JPY">xxxJPY</option>
+                    <option value="CAD">xxxCAD</option>
+                    <option value="AUD">xxxAUD</option>
+                    <option value="GBP">xxxGBP</option>
+                    <option value="NZD">xxxNZD</option>
+                    <option value="CHF">xxxCHF</option>
+                </select>
             </div>
-        </div>
-    </form>
+            <div class="form-group">
+                <label for="capital">Vốn (USD):</label>
+                <input type="number" id="capital" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label for="riskPercentage">Mức Rủi Ro (%):</label>
+                <input type="number" id="riskPercentage" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label for="pipRisk">Số Pip Rủi Ro:</label>
+                <input type="number" id="pipRisk" step="0.01" required>
+            </div>
+        </form>
 
-    <div class="result" id="result"></div>
-</div>
+        <div class="result" id="result"></div>
+    </div>
 
-<script>
-    const API_URL = 'https://api.exchangerate-api.com/v4/latest/USD';
-    const CACHE_KEY = 'tradingData';
-    const DATE_KEY = 'lastUpdateDate';
+    <script>
 
-    async function fetchExchangeRate() {
-        try {
-            const response = await fetch(API_URL);
-            const data = await response.json();
-            localStorage.setItem(CACHE_KEY, JSON.stringify({
-                exchangeRates: data.rates
-            }));
-            const currentDate = new Date().toISOString().split('T')[0];
-            localStorage.setItem(DATE_KEY, currentDate);
-            return data.rates;
-        } catch (error) {
-            console.error('Lỗi khi lấy tỷ giá:', error);
-            return null;
-        }
-    }
+        // Định nghĩa các giá trị pip cho từng cặp tiền
+        // const pipSize = pair === 'JPY' ? 0.01 : 0.0001;
+        // const pairValues = pipSize * 100000 / exchangeRate;
+        const pairValues = {
+            "USD": 10, // xxxUSD, US30
+            "XAU": 10, // XAUUSD
+            "BTC": 0.1, // BTCUSD
+            "JPY": 6.98714365567356, // xxxJPY
+            "CAD": 7.352941176470588, // xxxCAD
+            "AUD": 6.666666666666667, // xxxAUD
+            "GBP": 13.071895424836601, // xxxGBP
+            "NZD": 6.134969325153374, // xxxNZD
+            "CHF": 11.778563015312132 // xxxCHF
+        };
 
-    function getLocalData() {
-        const storedData = localStorage.getItem(CACHE_KEY);
-        return storedData ? JSON.parse(storedData) : {};
-    }
+        // Giá trị mặc định nếu cặp tiền không có trong danh sách
+        const defaultPairValue = 10; // Ví dụ: giá trị mặc định cho xxxUSD, US30
 
-    async function initialize() {
-        const data = getLocalData();
-        const lastUpdateDate = localStorage.getItem(DATE_KEY);
-        const currentDate = new Date().toISOString().split('T')[0];
-
-        if (lastUpdateDate !== currentDate || !data.exchangeRates) {
-            // Nếu ngày lưu trữ khác ngày hiện tại hoặc không có dữ liệu tỷ giá, tải tỷ giá và cập nhật
-            const exchangeRates = await fetchExchangeRate();
-            if (exchangeRates) {
-                updateExchangeRateField(exchangeRates);
-            }
-        } else {
-            // Nếu tỷ giá đã được cập nhật trong ngày hiện tại, lấy từ localStorage
-            updateExchangeRateField(data.exchangeRates);
-        }
-
-        // Điền các giá trị từ localStorage vào các trường
-        document.getElementById('currencyPair').value = data.currencyPair || 'USD';
-        document.getElementById('capital').value = data.capital || '';
-        document.getElementById('riskPercentage').value = data.riskPercentage || '';
-        updateExchangeRate();
-    }
-
-    function updateExchangeRateField(rates) {
-        const pair = document.getElementById('currencyPair').value;
-        const exchangeRate = rates[pair];
-        document.getElementById('exchangeRate').value = exchangeRate ? exchangeRate.toFixed(2) : '';
-    }
-
-    async function reloadExchangeRate() {
-        const exchangeRates = await fetchExchangeRate();
-        if (exchangeRates) {
-            updateExchangeRateField(exchangeRates);
-        }
-    }
-
-    function updateExchangeRate() {
-        const data = getLocalData();
-        if (data.exchangeRates) {
-            updateExchangeRateField(data.exchangeRates);
-        }
-    }
-
-    function displayResult(title, pipRisk, pipValueUSD, lotSize, maxRiskUSD) {
         const minLotSize = 0.01;
+        const CACHE_KEY = "lotCalculatorData";
 
-        // Tính toán kích thước chia đôi lot trước
-        const halfLotSize = Math.max(lotSize / 2, minLotSize);
-        // Đảm bảo lotSize không nhỏ hơn minLotSize
-        lotSize = Math.max(lotSize, minLotSize);
-
-        document.getElementById('result').innerHTML = `
-            <h2>${title}</h2>
-            <p>Lot: <span style="color:red">${lotSize.toFixed(2)}</span> (Chia đôi: <span style="color:red">${halfLotSize.toFixed(2)}</span>)</p>
-            <p>Số USD SL: ${maxRiskUSD.toFixed(2)}</p>
-            <p>Số Pip SL: ${pipRisk.toFixed(1)}</p>
-        `;
-        console.log('%c' + pipValueUSD, 'color: blue;'); // Debug
-    }
-
-    function calculateLot() {
-        const data = getLocalData();
-        const exchangeRates = data.exchangeRates;
-
-        if (!exchangeRates) {
-            document.getElementById('result').innerHTML = '<p>Lỗi khi lấy tỷ giá. Vui lòng thử lại sau.</p>';
-            return;
+        // Lấy giá trị hiện tại từ các trường trong form
+        function getFormValues() {
+            return {
+                pair: document.getElementById("currencyPair").value,
+                capital: parseFloat(document.getElementById("capital").value) || 0,
+                riskPercentage: parseFloat(document.getElementById("riskPercentage").value) || 0,
+                pipRisk: parseFloat(document.getElementById("pipRisk").value) || 0
+            };
         }
 
-        const capital = parseFloat(document.getElementById('capital').value);
-        const riskPercentage = parseFloat(document.getElementById('riskPercentage').value);
-        const pipRisk = parseFloat(document.getElementById('pipRisk').value);
-        const pair = document.getElementById('currencyPair').value;
-        const exchangeRate = exchangeRates[pair];
+        // Tính toán kích thước lot và cập nhật giao diện
+        function calculateLotSize() {
+            const { pair, capital, riskPercentage, pipRisk } = getFormValues();
+            const pairValue = pairValues[pair] || defaultPairValue;
 
-        localStorage.setItem(CACHE_KEY, JSON.stringify({
-            ...data,
-            currencyPair: pair,
-            capital,
-            riskPercentage
-        }));
-
-        // Kiểm tra nếu pipRisk không được nhập
-        if (isNaN(pipRisk) || pipRisk <= 0) {
-            document.getElementById('result').innerHTML = ''; // Không hiển thị kết quả
-            return;
-        }
-
-        const maxRiskUSD = (capital * riskPercentage) / 100;
-
-        if (pair === 'XAU') {
-            const pipSize = 0.01;
-            const pipValueUSD = 1;
-
-            const lotSize = maxRiskUSD / (pipRisk * pipValueUSD);
-
-            displayResult('Cặp Vàng', pipRisk, pipValueUSD, lotSize, maxRiskUSD);
-        } else if (pair === 'BTC') {
-            const pipValueUSD = 0.01;
-
-            const lotSize = maxRiskUSD / pipRisk;
-
-            displayResult('Cặp BTC', pipRisk, pipValueUSD, lotSize, maxRiskUSD);
-        } else {
-            if (!exchangeRate) {
-                document.getElementById('result').innerHTML = '<p>Tỷ giá không hợp lệ. Vui lòng kiểm tra lại.</p>';
+            if (pipRisk <= 0) {
                 return;
             }
 
-            const pipSize = pair === 'JPY' ? 0.01 : 0.0001;
-            const pipValueUSD = pipSize * 100000 / exchangeRate;
+            // Tính toán kích thước lot
+            let lotSize = (capital * (riskPercentage / 100)) / (pipRisk * pairValue);
+            const halfLotSize = Math.max(lotSize / 2, minLotSize);
+            lotSize = Math.max(lotSize, minLotSize);
 
-            const lotSize = maxRiskUSD / (pipRisk * pipValueUSD);
+            // Làm tròn số tiền SL
+            const maxRiskUSD = Math.round(capital * (riskPercentage / 100));
 
-            displayResult(`Cặp Tiền ${pair}`, pipRisk, pipValueUSD, lotSize, maxRiskUSD);
+            // Cập nhật kết quả trên giao diện
+            document.getElementById('result').innerHTML = `
+                <h2>Cặp tiền ${pair}</h2>
+                <p>Lot: <span style="color:red">${lotSize.toFixed(2)}</span> (Chia đôi: <span style="color:red">${halfLotSize.toFixed(2)}</span>)</p>
+                <p>Số USD SL: ${maxRiskUSD}</p>
+            `;
+
+            console.log('%c' + pairValue, 'color: blue;'); // Debug
         }
-    }
 
-    document.getElementById('lotForm').addEventListener('input', calculateLot);
-    initialize();
-</script>
+        // Lưu dữ liệu vào localStorage
+        function saveToLocalStorage() {
+            const { pair, capital, riskPercentage } = getFormValues();
+            localStorage.setItem(CACHE_KEY, JSON.stringify({ pair, capital, riskPercentage }));
+        }
+
+        // Tải dữ liệu từ localStorage và cập nhật form
+        function loadFromLocalStorage() {
+            const savedData = JSON.parse(localStorage.getItem(CACHE_KEY));
+            if (savedData) {
+                document.getElementById("currencyPair").value = savedData.pair;
+                document.getElementById("capital").value = savedData.capital;
+                document.getElementById("riskPercentage").value = savedData.riskPercentage;
+                calculateLotSize(); // Tính toán lại kết quả dựa trên dữ liệu đã lưu
+            }
+        }
+
+        // Gán sự kiện cho các trường đầu vào và cặp tiền
+        function setupEventListeners() {
+            document.getElementById("currencyPair").addEventListener("change", () => {
+                calculateLotSize();
+                saveToLocalStorage();
+            });
+            
+            document.querySelectorAll('#lotForm input').forEach(input => {
+                input.addEventListener("input", () => {
+                    calculateLotSize();
+                    saveToLocalStorage();
+                });
+            });
+        }
+
+        // Khởi tạo khi trang được tải
+        window.addEventListener('DOMContentLoaded', () => {
+            loadFromLocalStorage();
+            setupEventListeners();
+        });
+
+    </script>
 
 </body>
 </html>
