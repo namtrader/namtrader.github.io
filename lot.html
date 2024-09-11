@@ -167,6 +167,9 @@
         window.addEventListener('DOMContentLoaded', () => {
             loadFromLocalStorage();
             setupEventListeners();
+
+            // Tự động focus vào ô pipRisk khi trang tải xong
+            document.getElementById('pipRisk').focus();
         });
 
     </script>
