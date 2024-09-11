@@ -91,16 +91,13 @@
             "CHF": 11.778563015312132 // xxxCHF
         };
 
-        // Giá trị mặc định nếu cặp tiền không có trong danh sách
-        const defaultPairValue = 10; // Ví dụ: giá trị mặc định cho xxxUSD, US30
-
         const minLotSize = 0.01;
         const CACHE_KEY = "lotCalculatorData";
 
         // Lấy giá trị hiện tại từ các trường trong form
         function getFormValues() {
             return {
-                pair: document.getElementById("currencyPair").value,
+                pair: document.getElementById("currencyPair").value || 'USD',
                 capital: parseFloat(document.getElementById("capital").value) || 0,
                 riskPercentage: parseFloat(document.getElementById("riskPercentage").value) || 0,
                 pipRisk: parseFloat(document.getElementById("pipRisk").value) || 0
@@ -110,7 +107,7 @@
         // Tính toán kích thước lot và cập nhật giao diện
         function calculateLotSize() {
             const { pair, capital, riskPercentage, pipRisk } = getFormValues();
-            const pairValue = pairValues[pair] || defaultPairValue;
+            const pairValue = pairValues[pair];
 
             if (pipRisk <= 0) {
                 return;
